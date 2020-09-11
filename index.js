@@ -8,22 +8,21 @@ const truncate = str =>
   str.length <= MAX_LENGTH ? str : str.slice(0, MAX_LENGTH - 3) + '...'
 
 const serializers = {
-  IssueCommentEvent: item => {
-    return `🗣 Commented on #${item.payload.issue.number} in ${item.repo.name}`
-  },
-  IssuesEvent: item => {
-    return `❗️ ${capitalize(item.payload.action)} issue #${
-      item.payload.issue.number
-    } in ${item.repo.name}`
-  },
+  IssueCommentEvent: item => `🗣 (${item.created_at}) Commented on #${item.payload.issue.number} in ${item.repo.name}`,
+  IssuesEvent: item => `❗️ (${item.created_at}) ${capitalize(item.payload.action)} issue #${item.payload.issue.number} in ${item.repo.name}`,
   PullRequestEvent: item => {
-    const emoji = item.payload.action === 'opened' ? '💪' : '❌'
-    const line = item.payload.pull_request.merged
-      ? '🎉 Merged'
-      : `${emoji} ${capitalize(item.payload.action)}`
-    return `${line} PR #${item.payload.pull_request.number} in ${
-      item.repo.name
-    }`
+    let emote;
+    let action;
+
+    if (item.payload.pull_request.merged) {
+      emote = '🎉';
+      action = 'Merged';
+    } else {
+      emote = (item.payload.action === 'opened' ? '💪' : '❌');
+      action = capitalize(item.payload.action)
+    }
+
+    return [emote, item.created_at, action, `PR #${item.payload.pull_request.number} in ${item.repo.name}`].join(' ');
   }
 }
 
