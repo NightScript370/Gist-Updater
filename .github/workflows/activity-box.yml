@@ -21,7 +21,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: pnpm install
+    - run: npm ci
     - run: node ./index.js
       env:
         GH_PAT: ${{ secrets.GH_PAT }}
