@@ -1,18 +1,30 @@
 name: Activity Box
 
 on:
+  push:
+    branches: [ master ]
   schedule:
     - cron: '*/10 * * * *'
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [14.x]
+
     steps:
-      - uses: actions/checkout@v1
-      - uses: JasonEtco/activity-box@master
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_USERNAME: NightYoshi370
-          GIST_ID: 9430c9b83c3b5482295115982c843520
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: pnpm install
+    - run: node ./index.js
+      env:
+        GH_PAT: ${{ secrets.GH_PAT }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_USERNAME: NightYoshi370
+        GIST_ID: 9430c9b83c3b5482295115982c843520
