@@ -45,7 +45,7 @@ Toolkit.run(
 
 		const content = events.data
 			.filter(event => serializers.hasOwnProperty(event.type))             // Filter out any boring activity
-			.slice(0, 15)                                                        // We only have 15 lines to work with
+			.slice(0, 7)                                                         // We only have 7 lines to work with
 			.map(item => serializers[item.type](item))                           // Call the serializer to construct a string
 			.map(str => str.length <= 95 ? str : str.slice(0, 95 - 3) + '...')   // Truncate if necessary
 			.join('\n')                                                          // Join items to one string
