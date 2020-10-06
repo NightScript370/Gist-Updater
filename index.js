@@ -9,8 +9,21 @@ const serializers = {
 	IssueCommentEvent: item => `🗣 (${item.created_at}) Commented on #${item.payload.issue.number} in ${item.repo.name}`,
 	IssuesEvent: item => `❗️ (${item.created_at}) ${capitalize(item.payload.action)} issue #${item.payload.issue.number} in ${item.repo.name}`,
 	ForkEvent: item => `🍴 (${item.created_at}) Forked ${item.repo.name}`,
-	GollumEvent: item => `📜 (${item.created_at}) Updated ${item.repo.name}'s Wiki`,
 	ReleaseEvent: item => `📣 (${item.created_at}) ${item.payload.prerelease == true ? 'Pre-Released' : 'Released'} ${item.repo.name} ${item.payload.release.tag_name}`,
+	GollumEvent: item => {
+		let action;
+		let affected;
+
+		if (item.payload.pages.length == 1) {
+			action = capitalize(item.payload.pages[0].action)
+			affected = item.payload.pages[0].title + ' page';
+		} else {
+			action = capitalize([...new Set(item.payload.pages.map(elem => elem.action))].join(" & "))
+			affected = item.payload.pages.length + ' pages';
+		}
+
+		return `📜 (${item.created_at}) ${action} ${affected} on ${item.repo.name}'s Wiki`
+	},
 	PullRequestEvent: item => {
 		let emote;
 		let action;
