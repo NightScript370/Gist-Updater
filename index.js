@@ -44,11 +44,11 @@ Toolkit.run(
 		tools.log.debug(`Activity for ${GH_USERNAME}, ${events.data.length} events found.`)
 
 		const content = events.data
-			.filter(event => serializers.hasOwnProperty(event.type))                             // Filter out any boring activity
-			.slice(0, 15)                                                                        // We only have 15 lines to work with
-			.map(item => serializers[item.type](item))                                           // Call the serializer to construct a string
-			.map(str => str.length <= MAX_LENGTH ? str : str.slice(0, MAX_LENGTH - 3) + '...')   // Truncate if necessary
-			.join('\n')                                                                          // Join items to one string
+			.filter(event => serializers.hasOwnProperty(event.type))             // Filter out any boring activity
+			.slice(0, 15)                                                        // We only have 15 lines to work with
+			.map(item => serializers[item.type](item))                           // Call the serializer to construct a string
+			.map(str => str.length <= 95 ? str : str.slice(0, 95 - 3) + '...')   // Truncate if necessary
+			.join('\n')                                                          // Join items to one string
 
 		const box = new GistBox({ id: GIST_ID, token: GH_PAT })
 		try {
