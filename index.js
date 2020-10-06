@@ -1,13 +1,16 @@
 require('dotenv').config()
 
 const { Toolkit } = require('actions-toolkit')
-const { GistBox, MAX_LINES, MAX_LENGTH } = require('gist-box')
+const { GistBox, MAX_LENGTH } = require('gist-box')
 
 const capitalize = str => str.slice(0, 1).toUpperCase() + str.slice(1)
 
 const serializers = {
 	IssueCommentEvent: item => `🗣 (${item.created_at}) Commented on #${item.payload.issue.number} in ${item.repo.name}`,
 	IssuesEvent: item => `❗️ (${item.created_at}) ${capitalize(item.payload.action)} issue #${item.payload.issue.number} in ${item.repo.name}`,
+	ForkEvent: item => `🍴 (${item.created_at}) Forked ${item.repo.name}`,
+	GollumEvent: item => `📜 (${item.created_at}) Updated ${item.repo.name}'s Wiki`,
+	ReleaseEvent: item => `📣 (${item.created_at}) ${item.payload.prerelease == true ? 'Pre-Released' : 'Released'} ${item.repo.name} ${item.payload.release.tag_name}`,
 	PullRequestEvent: item => {
 		let emote;
 		let action;
@@ -42,7 +45,7 @@ Toolkit.run(
 
 		const content = events.data
 			.filter(event => serializers.hasOwnProperty(event.type))                             // Filter out any boring activity
-			.slice(0, MAX_LINES)                                                                 // We only have five lines to work with
+			.slice(0, 15)                                                                        // We only have 15 lines to work with
 			.map(item => serializers[item.type](item))                                           // Call the serializer to construct a string
 			.map(str => str.length <= MAX_LENGTH ? str : str.slice(0, MAX_LENGTH - 3) + '...')   // Truncate if necessary
 			.join('\n')                                                                          // Join items to one string
@@ -50,8 +53,14 @@ Toolkit.run(
 		const box = new GistBox({ id: GIST_ID, token: GH_PAT })
 		try {
 			tools.log.debug(`Updating Gist ${GIST_ID}`)
-			await box.update({ content })
-			tools.exit.success('Gist updated!')
+			let currentGist = await box.get()
+			
+			if (currentGist !== content) {
+				await box.update({ content })
+				tools.exit.success('Gist updated!')
+			} else {
+				tools.exit.success('No need for updated Gist!')
+			}
 		} catch (err) {
 			tools.log.debug('Error getting or update the Gist:')
 			return tools.exit.failure(err)
